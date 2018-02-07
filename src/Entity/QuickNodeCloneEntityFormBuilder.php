@@ -6,7 +6,7 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Entity\EntityFormBuilder;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
+use Drupal\node\Entity\NodeType;
 
 /**
  * Builds entity forms.
@@ -25,6 +25,12 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
     // Check for paragraph fields which need to be duplicated as well.
     foreach ($new_node->getTranslationLanguages() as $langcode => $language) {
       $translated_node = $new_node->getTranslation($langcode);
+      
+      if ($excludeFields = \Drupal::config('quick_node_clone.settings')->get($translated_node->getType())) {
+        foreach($excludeFields as $key => $excludeField) {
+          unset($translated_node->{$excludeField});
+        }
+      }
 
       foreach ($translated_node->getFieldDefinitions() as $field_definition) {
         $field_storage_definition = $field_definition->getFieldStorageDefinition();
@@ -47,6 +53,7 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
             }
           }
         }
+
         \Drupal::moduleHandler()->alter('cloned_node', $translated_node, $field_name, $field_settings);
       }
       $prepend_text = "";
