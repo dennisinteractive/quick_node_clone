@@ -48,8 +48,6 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
 
     $form['fields'] = [
       '#type' => 'details',
-      '#prefix' => '<div id = "fields-list" >',
-      '#suffix' => '</div>',
       '#open' => TRUE,
       '#title' => 'Fields',
       '#description' => $this->getDescription($form_state),
@@ -58,19 +56,24 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
     if ($selected_nodes = $this->getSelectedNodeTypes($form_state)) {
       foreach ($selected_nodes as $k => $value) {
         if (!empty($value)) {
-          $foptions = [];
+          $options = [];
           $fields = \Drupal::EntityManager()->getFieldDefinitions('node', $value);
           foreach ($fields as $k => $f) {
             if ($f instanceof \Drupal\field\Entity\FieldConfig) {
-              $foptions[$f->getName()] = $f->getLabel();
+              $options[$f->getName()] = $f->getLabel();
             }
+            $form['fields']['nodeTypes_' . $value] = [
+              '#type' => 'details',
+              '#title' => $value,
+              '#open' => TRUE,
+            ];
+            $form['fields']['nodeTypes_' . $value][$value] = [
+              '#type' => 'checkboxes',
+              '#title' => 'Fields for ' . $value,
+              '#default_value' => ($this->getDefaultFields($value)) ? $this->getDefaultFields($value) : [],
+              '#options' => $options,
+            ];
           }
-          $form['fields']['nodeTypes_' . $value][$value] = [
-            '#type' => 'checkboxes',
-            '#title' => 'Fields for ' . $value,
-            '#default_value' => $this->getDefaultFields($value),
-            '#options' => $foptions,
-          ];
         }
       }
     }
