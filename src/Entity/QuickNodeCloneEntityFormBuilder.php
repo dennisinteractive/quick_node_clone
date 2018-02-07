@@ -6,7 +6,6 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Entity\EntityFormBuilder;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\node\Entity\NodeType;
 
 /**
  * Builds entity forms.
@@ -25,7 +24,8 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
     // Check for paragraph fields which need to be duplicated as well.
     foreach ($new_node->getTranslationLanguages() as $langcode => $language) {
       $translated_node = $new_node->getTranslation($langcode);
-      
+
+      // Unset excluded fields.
       if ($excludeFields = \Drupal::config('quick_node_clone.settings')->get($translated_node->getType())) {
         foreach($excludeFields as $key => $excludeField) {
           unset($translated_node->{$excludeField});
@@ -43,17 +43,21 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
             foreach ($translated_node->get($field_name) as $value) {
               if ($value->entity) {
                 $value->entity = $value->entity->createDuplicate();
-                foreach($value->entity->getFieldDefinitions() as $field_definition) {
+                foreach ($value->entity->getFieldDefinitions() as $field_definition) {
                   $field_storage_definition = $field_definition->getFieldStorageDefinition();
                   $pfield_settings = $field_storage_definition->getSettings();
                   $pfield_name = $field_storage_definition->getName();
+
+                  // Check whether this field is excluded and if so unset.
+                  if ($this->excludeParagraphField($pfield_name)) {
+                    unset($value->entity->{$pfield_name});
+                  }
                   \Drupal::moduleHandler()->alter('cloned_node_paragraph_field', $value->entity, $pfield_name, $pfield_settings);
                 }
               }
             }
           }
         }
-
         \Drupal::moduleHandler()->alter('cloned_node', $translated_node, $field_name, $field_settings);
       }
       $prepend_text = "";
@@ -74,4 +78,24 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
     return $this->formBuilder->buildForm($form_object, $form_state);
   }
 
+  /**
+   * Check whether to exclude the paragraph field.
+   *
+   * @param $pfield_name
+   *
+   * @return bool
+   */
+  public function excludeParagraphField($pfield_name) {
+    $paragraph_bundles = entity_get_bundles("paragraph");
+    foreach ($paragraph_bundles as $paragraph => $p) {
+      if ($excludeParagraphs = \Drupal::config("quick_node_clone.settings")->get($paragraph)) {
+        foreach ($excludeParagraphs as $excludeParagraph) {
+          if ($pfield_name === $excludeParagraph) {
+           return TRUE;
+          }
+        }
+      }
+    }
+    return FALSE;
+  }
 }

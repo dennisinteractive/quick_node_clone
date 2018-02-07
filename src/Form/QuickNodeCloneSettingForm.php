@@ -5,7 +5,6 @@ namespace Drupal\quick_node_clone\Form;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\NodeType;
-use Drupal\Core\Entity\EntityFieldManager;
 
 class QuickNodeCloneSettingForm extends ConfigFormBase {
 
@@ -28,6 +27,7 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
     $settings = $this->configFactory->get('quick_node_clone.settings');
+
     $form['text_to_prepend_to_title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Text to prepend to title'),
@@ -70,7 +70,7 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
             $form['fields']['nodeTypes_' . $value][$value] = [
               '#type' => 'checkboxes',
               '#title' => 'Fields for ' . $value,
-              '#default_value' => ($this->getDefaultFields($value)) ? $this->getDefaultFields($value) : [],
+              '#default_value' => $this->getDefaultFields($value),
               '#options' => $options,
             ];
           }
@@ -159,7 +159,7 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    * @return array|mixed|null|string
    */
   public function getDefaultFields($value) {
-    $default_fields = '';
+    $default_fields = [];
     if (!empty($this->config('quick_node_clone.settings')->get($value))) {
       $default_fields = $this->config('quick_node_clone.settings')->get($value);
     }
