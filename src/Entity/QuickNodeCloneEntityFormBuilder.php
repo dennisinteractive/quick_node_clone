@@ -6,11 +6,52 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Entity\EntityFormBuilder;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 
 /**
  * Builds entity forms.
  */
 class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
+
+  /**
+   * The Entity Bundle Type Info.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
+   */
+  protected $entityTypeBundleInfo;
+
+  /**
+   * The Config Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * The Modular Handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $modularHandler;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_type.bundle.info'),
+      $container->get('config.factory'),
+      $container->get('modular_handler')
+    );
+  }
+
+  public function __construct(EntityTypeBundleInfoInterface $entityTypeBundleInfo, ConfigFactoryInterface $configFactory, ModuleHandlerInterface $moduleHandler) {
+    $this->entityTypeBundleInfo = $entityTypeBundleInfo;
+    $this->configFactory = $configFactory;
+    $this->modularHandler = $moduleHandler;
+  }
 
   /**
    * {@inheritdoc}
@@ -26,7 +67,7 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
       $translated_node = $new_node->getTranslation($langcode);
 
       // Unset excluded fields.
-      if ($excludeFields = \Drupal::config('quick_node_clone.settings')->get($translated_node->getType())) {
+      if ($excludeFields = $this->getSettings($translated_node->getType())) {
         foreach($excludeFields as $key => $excludeField) {
           unset($translated_node->{$excludeField});
         }
@@ -52,18 +93,18 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
                   if ($this->excludeParagraphField($pfield_name)) {
                     unset($value->entity->{$pfield_name});
                   }
-                  \Drupal::moduleHandler()->alter('cloned_node_paragraph_field', $value->entity, $pfield_name, $pfield_settings);
+                  $this->modularHandler->alter('cloned_node_paragraph_field', $value->entity, $pfield_name, $pfield_settings);
                 }
               }
             }
           }
         }
-        \Drupal::moduleHandler()->alter('cloned_node', $translated_node, $field_name, $field_settings);
+        $this->modularHandler->alter('cloned_node', $translated_node, $field_name, $field_settings);
       }
       $prepend_text = "";
-      $qnc_config = \Drupal::config('quick_node_clone.settings');
-      if(!empty($qnc_config->get('text_to_prepend_to_title'))) {
-        $prepend_text = $qnc_config->get('text_to_prepend_to_title') . " ";
+
+      if($qnc_config = $this->getSettings('text_to_prepend_to_title')) {
+        $prepend_text = $qnc_config . " ";
       }
       $translated_node->setTitle(t($prepend_text . '@title', ['@title' => $original_entity->getTitle()], ['langcode' => $langcode]));
     }
@@ -86,9 +127,9 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
    * @return bool
    */
   public function excludeParagraphField($pfield_name) {
-    $paragraph_bundles = entity_get_bundles("paragraph");
+    $paragraph_bundles = $this->entityTypeBundleInfo->getBundleInfo('paragraph');
     foreach ($paragraph_bundles as $paragraph => $p) {
-      if ($excludeParagraphs = \Drupal::config("quick_node_clone.settings")->get($paragraph)) {
+      if ($excludeParagraphs = $this->getSettings($paragraph)) {
         foreach ($excludeParagraphs as $excludeParagraph) {
           if ($pfield_name === $excludeParagraph) {
            return TRUE;
@@ -97,5 +138,17 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
       }
     }
     return FALSE;
+  }
+
+  /**
+   * Get the settings.
+   *
+   * @param $value
+   *
+   * @return array|mixed|null
+   */
+  public function getSettings($value) {
+    $settings = $this->configFactory->get('quick_node_clone.settings')->get($value);
+    return $settings;
   }
 }

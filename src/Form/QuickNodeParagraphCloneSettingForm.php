@@ -3,8 +3,46 @@ namespace Drupal\quick_node_clone\Form;
 
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\field\Entity\FieldConfig;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
+
+  /**
+   * The Entity Field Manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  protected $entityFieldManager;
+
+  /**
+   * The Config Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
+   * The Entity Bundle Type Info.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
+   */
+  protected $entityTypeBundleInfo;
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('entity_field.manager'),
+      $container->get('config.factory'),
+      $container->get('entity_type.bundle.info')
+    );
+  }
+
    /**
    * {@inheritdoc}
    */
@@ -17,11 +55,24 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
   public function getFormId() {
     return 'quick_node_clone_paragraph_setting_form';
   }
+
+  /**
+   * QuickNodeParagraphCloneSettingForm constructor.
+   *
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   */
+  public function __construct(EntityFieldManagerInterface $entityFieldManager, ConfigFactoryInterface $configFactory, EntityTypeBundleInfoInterface $entityTypeBundleInfo) {
+    $this->entityFieldManager = $entityFieldManager;
+    $this->configFactory = $configFactory;
+    $this->entityTypeBundleInfo = $entityTypeBundleInfo;
+  }
+
   /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $paragraph_bundles = entity_get_bundles("paragraph");
+    $paragraph_bundles = $this->entityTypeBundleInfo->getBundleInfo('paragraph');
     if (!empty($paragraph_bundles)) {
       $para_bundle_list = [];
       foreach ($paragraph_bundles as $paragraph => $label) {
@@ -31,7 +82,7 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
         '#type' => 'checkboxes',
         '#title' => 'Paragraph Types',
         '#options' => $para_bundle_list,
-        '#default_value' => ($this->config('quick_node_clone.settings')->get('para')) ? $this->config('quick_node_clone.settings')->get('para') : [],
+        '#default_value' => ($this->getSettings('para')) ? $this->getSettings('para') : [],
         '#ajax' => [
           'callback' => 'Drupal\quick_node_clone\Form\QuickNodeParagraphCloneSettingForm::paraFieldsCallback',
           'wrapper' => 'pfields-list',
@@ -51,9 +102,9 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
         foreach ($paragraph_fields as $k => $value) {
           if (!empty($value)) {
             $foptions = [];
-            $fields = \Drupal::entityManager()->getFieldDefinitions('paragraph', $k);
+            $fields = $this->entityFieldManager->getFieldDefinitions('paragraph', $k);
             foreach ($fields as $key => $f) {
-              if ($f instanceof \Drupal\field\Entity\FieldConfig) {
+              if ($f instanceof FieldConfig) {
                 $foptions[$f->getName()] = $f->getLabel();
               }
               $description = "";
@@ -68,7 +119,7 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
               $form['pfields']['paragraph_' . $k][$k] = [
                 '#type' => 'checkboxes',
                 '#title' => 'Fields',
-                '#default_value' => ($this->config('quick_node_clone.settings')->get($k)) ? $this->config('quick_node_clone.settings')->get($k) : [],
+                '#default_value' => ($this->getSettings($k)) ? $this->getSettings($k) : [],
                 '#options' => $foptions,
                 '#description' => $description,
               ];
@@ -117,7 +168,7 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
     if ($form_state->getValue('para') != NULL && array_filter($form_state->getValue('para'))) {
       $desc = '';
     }
-    if (!empty($this->config('quick_node_clone.settings')->get('para')) && array_filter($this->config('quick_node_clone.settings')->get('para'))) {
+    if (!empty($this->getSettings('para')) && array_filter($this->getSettings('para'))) {
       $desc = '';
     }
     return $desc;
@@ -136,10 +187,23 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
       $para_bundles = $form_state->getValue('para');
     }
     else {
-      if (!empty($this->config('quick_node_clone.settings')->get('para')) && array_filter($this->config('quick_node_clone.settings')->get('para'))) {
-        $para_bundles = $this->config('quick_node_clone.settings')->get('para');
+      if (!empty($this->getSettings('para')) && array_filter($this->getSettings('para'))) {
+        $para_bundles = $this->getSettings('para');
       }
     }
     return $para_bundles;
   }
+
+  /**
+   * Get the settings.
+   *
+   * @param $value
+   *
+   * @return array|mixed|null
+   */
+  public function getSettings($value) {
+    $settings = $this->configFactory->get('quick_node_clone.settings')->get($value);
+    return $settings;
+  }
+
 }

@@ -12,9 +12,23 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class QuickNodeCloneSettingForm extends ConfigFormBase {
 
+  /**
+   * The Entity Field Manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
   protected $entityFieldManager;
+
+  /**
+   * The Config Factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
   protected $configFactory;
 
+  /**
+   * {@inheritdoc}
+   */
   public static function create(ContainerInterface $container) {
     return new static(
       $container->get('config.factory'),
@@ -36,7 +50,12 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
     return 'quick_node_clone_setting_form';
   }
 
-
+  /**
+   * QuickNodeCloneSettingForm constructor.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
+   */
   public function __construct(ConfigFactoryInterface $configFactory, EntityFieldManagerInterface $entityFieldManager ) {
     $this->configFactory = $configFactory;
     $this->entityFieldManager = $entityFieldManager;
@@ -46,12 +65,11 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $settings = $this->configFactory->get('quick_node_clone.settings');
 
     $form['text_to_prepend_to_title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Text to prepend to title'),
-      '#default_value' => $settings->get('text_to_prepend_to_title'),
+      '#default_value' => $this->getSettings('text_to_prepend_to_title'),
       '#description' => $this->t('Enter text to add to the title of a cloned node to help content editors. A space will be added between this text and the title. Example: "Clone of"'),
     ];
 
@@ -59,7 +77,7 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
       '#type' => 'checkboxes',
       '#title' => 'Content Types',
       '#options' => $this->getNodeTypes(),
-      '#default_value' => $this->config('quick_node_clone.settings')->get('nodeTypes'),
+      '#default_value' => $this->getSettings('nodeTypes'),
       '#ajax' => [
         'callback' => 'Drupal\quick_node_clone\Form\QuickNodeCloneSettingForm::fieldsCallback',
         'wrapper' => 'fields-list',
@@ -147,8 +165,8 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
     if ($form_state->getValue('nodeTypes') != NULL && array_filter($form_state->getValue('nodeTypes'))) {
       $selected_types = $form_state->getValue('nodeTypes');
     }
-    if (!empty($this->config('quick_node_clone.settings')->get('nodeTypes')) && array_filter($this->config('quick_node_clone.settings')->get('nodeTypes'))) {
-      $selected_types = $this->config('quick_node_clone.settings')->get('nodeTypes');
+    if (!empty($this->getSettings('nodeTypes')) && array_filter($this->getSettings('nodeTypes'))) {
+      $selected_types = $this->getSettings('nodeTypes');
     }
 
     return $selected_types;
@@ -166,7 +184,7 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
     if ($form_state->getValue('nodeTypes') != NULL && array_filter($form_state->getValue('nodeTypes'))) {
       $desc = '';
     }
-    if (!empty($this->config('quick_node_clone.settings')->get('nodeTypes')) && array_filter($this->config('quick_node_clone.settings')->get('nodeTypes'))) {
+    if (!empty($this->getSettings('nodeTypes')) && array_filter($this->getSettings('nodeTypes'))) {
       $desc = '';
     }
     return $desc;
@@ -181,9 +199,21 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    */
   public function getDefaultFields($value) {
     $default_fields = [];
-    if (!empty($this->config('quick_node_clone.settings')->get($value))) {
-      $default_fields = $this->config('quick_node_clone.settings')->get($value);
+    if (!empty($this->getSettings($value))) {
+      $default_fields = $this->getSettings($value);
     }
     return $default_fields;
+  }
+
+  /**
+   * Get the settings.
+   *
+   * @param $value
+   *
+   * @return array|mixed|null
+   */
+  public function getSettings($value) {
+    $settings = $this->configFactory->get('quick_node_clone.settings')->get($value);
+    return $settings;
   }
 }
