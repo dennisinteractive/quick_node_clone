@@ -205,5 +205,4 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
     $settings = $this->configFactory->get('quick_node_clone.settings')->get($value);
     return $settings;
   }
-
 }
