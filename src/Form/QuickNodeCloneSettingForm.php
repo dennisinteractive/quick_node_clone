@@ -2,11 +2,25 @@
 
 namespace Drupal\quick_node_clone\Form;
 
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\node\Entity\NodeType;
+use Drupal\field\Entity\FieldConfig;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class QuickNodeCloneSettingForm extends ConfigFormBase {
+
+  protected $entityFieldManager;
+  protected $configFactory;
+
+  public static function create(ContainerInterface $container) {
+    return new static(
+      $container->get('config.factory'),
+      $container->get('entity_field.manager')
+    );
+  }
 
   /**
    * {@inheritdoc}
@@ -20,6 +34,12 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    */
   public function getFormId() {
     return 'quick_node_clone_setting_form';
+  }
+
+
+  public function __construct(ConfigFactoryInterface $configFactory, EntityFieldManagerInterface $entityFieldManager ) {
+    $this->configFactory = $configFactory;
+    $this->entityFieldManager = $entityFieldManager;
   }
 
   /**
@@ -57,9 +77,10 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
       foreach ($selected_nodes as $k => $value) {
         if (!empty($value)) {
           $options = [];
-          $fields = \Drupal::EntityManager()->getFieldDefinitions('node', $value);
+
+          $fields = $this->entityFieldManager->getFieldDefinitions('node', $value);
           foreach ($fields as $k => $f) {
-            if ($f instanceof \Drupal\field\Entity\FieldConfig) {
+            if ($f instanceof FieldConfig) {
               $options[$f->getName()] = $f->getLabel();
             }
             $form['fields']['nodeTypes_' . $value] = [
