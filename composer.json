@@ -1,5 +1,5 @@
 {
-  "name": "dennisdigital/quick_node_clone",
+  "name": "drupal/quick_node_clone",
   "type": "drupal-module",
   "description": "Clone a node.",
   "keywords": ["Drupal", "Quick_node_clone"],
