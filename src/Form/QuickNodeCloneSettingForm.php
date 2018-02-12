@@ -100,6 +100,22 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
           foreach ($fields as $k => $f) {
             if ($f instanceof FieldConfig) {
               $options[$f->getName()] = $f->getLabel();
+
+              // Nest the target entities fields.
+              $settings = $f->getSettings();
+              if (!empty($settings['target_type']) && !empty($settings['handler_settings']['target_bundles'])) {
+                foreach ($settings['handler_settings']['target_bundles'] as $target_bundle) {
+                  $options[$f->getName() . '__' . $settings['target_type'] . '__' . $target_bundle] = ' - ' . $target_bundle;
+                  $ref_fields = $this->entityFieldManager->getFieldDefinitions($settings['target_type'], $target_bundle);
+                  if (!empty($ref_fields)) {
+                    foreach ($ref_fields as $rk => $rf) {
+                      if ($rf instanceof FieldConfig) {
+                        $options[$f->getName() . '__' . $settings['target_type'] . '__' . $target_bundle . '__' . $rf->getName()] = ' - - ' . $rf->getLabel();
+                      }
+                    }
+                  }
+                }
+              }
             }
             $form['fields']['nodeTypes_' . $value] = [
               '#type' => 'details',
