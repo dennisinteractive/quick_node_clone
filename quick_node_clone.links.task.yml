@@ -9,9 +9,3 @@ quick_node_clone.node.settings:
   base_route: quick_node_clone.settingsform
   title: 'Node'
   weight: -10
-
-quick_node_clone.paragraphsettingsform:
-  route_name: quick_node_clone.paragraphsettingsform
-  base_route: quick_node_clone.settingsform
-  title: 'Paragraph'
-  weight: 10

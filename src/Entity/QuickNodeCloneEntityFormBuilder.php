@@ -7,9 +7,11 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Entity\EntityFormBuilder;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\field\Entity\FieldConfig;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -78,17 +80,18 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
    * {@inheritdoc}
    */
   public function getForm(EntityInterface $original_entity, $operation = 'default', array $form_state_additions = array()) {
-
     // Clone the node using the awesome createDuplicate() core function.
     /** @var \Drupal\node\Entity\Node $new_node */
     $new_node = $original_entity->createDuplicate();
 
-    // Check for paragraph fields which need to be duplicated as well.
+    // Check for entity fields which need to be duplicated as well.
     foreach ($new_node->getTranslationLanguages() as $langcode => $language) {
       $translated_node = $new_node->getTranslation($langcode);
 
       // Unset excluded fields.
-      if ($excludeFields = $this->getConfigSettings($translated_node->getType())) {
+      $excludeFields = $this->getConfigSettings($translated_node->getType());
+
+      if (!empty($excludeFields)) {
         foreach($excludeFields as $key => $excludeField) {
           unset($translated_node->{$excludeField});
         }
@@ -98,26 +101,34 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
         $field_storage_definition = $field_definition->getFieldStorageDefinition();
         $field_settings = $field_storage_definition->getSettings();
         $field_name = $field_storage_definition->getName();
-        if (isset($field_settings['target_type']) && $field_settings['target_type'] == 'paragraph') {
 
-          // Each paragraph entity will be duplicated, so we won't be editing the same as the parent in every clone.
+        if (isset($field_settings['target_type'])) {
+
+          // Each entity will be duplicated, so we won't be editing the same as the parent in every clone.
           if (!$translated_node->get($field_name)->isEmpty()) {
-            foreach ($translated_node->get($field_name) as $value) {
-              if ($value->entity) {
+            foreach ($translated_node->get($field_name) as $key => $value) {
+              if ($value->entity instanceof FieldableEntityInterface) {
                 $value->entity = $value->entity->createDuplicate();
                 foreach ($value->entity->getFieldDefinitions() as $field_definition) {
-                  $field_storage_definition = $field_definition->getFieldStorageDefinition();
-                  $pfield_settings = $field_storage_definition->getSettings();
-                  $pfield_name = $field_storage_definition->getName();
-
-                  // Check whether this field is excluded and if so unset.
-                  if ($this->excludeParagraphField($pfield_name)) {
-                    unset($value->entity->{$pfield_name});
+                  if (!($field_definition instanceof FieldConfig)) {
+                    continue;
                   }
-                  $this->moduleHandler->alter('cloned_node_paragraph_field', $value->entity, $pfield_name, $pfield_settings);
+                  $field_storage_definition = $field_definition->getFieldStorageDefinition();
+                  $entity_field_settings = $field_storage_definition->getSettings();
+                  $entity_field_name = $field_storage_definition->getName();
+
+                  // Exclude target entity fields based on config.
+                  $bundle_config_key = $field_name . '__' . $value->entity->getEntityTypeId() . '__' . $value->entity->bundle();
+                  $field_config_key = $bundle_config_key . '__' . $entity_field_name;
+                  if (!empty($excludeFields[$bundle_config_key]) || !empty($excludeFields[$field_config_key])) {
+                    unset($value->entity->{$entity_field_name});
+                  }
+
+                  $this->moduleHandler->alter('cloned_node_entity_field', $value->entity, $entity_field_name, $entity_field_settings);
                 }
               }
             }
+
           }
         }
         $this->moduleHandler->alter('cloned_node', $translated_node, $field_name, $field_settings);
@@ -138,27 +149,6 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
 
     $form_state = (new FormState())->setFormState($form_state_additions);
     return $this->formBuilder->buildForm($form_object, $form_state);
-  }
-
-  /**
-   * Check whether to exclude the paragraph field.
-   *
-   * @param $pfield_name
-   *
-   * @return bool
-   */
-  public function excludeParagraphField($pfield_name) {
-    $paragraph_bundles = $this->entityTypeBundleInfo->getBundleInfo('paragraph');
-    foreach ($paragraph_bundles as $paragraph => $p) {
-      if ($excludeParagraphs = $this->getConfigSettings($paragraph)) {
-        foreach ($excludeParagraphs as $excludeParagraph) {
-          if ($pfield_name === $excludeParagraph) {
-           return TRUE;
-          }
-        }
-      }
-    }
-    return FALSE;
   }
 
   /**
