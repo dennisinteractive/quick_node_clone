@@ -17,3 +17,10 @@ quick_node_clone.settingsform:
     _title: 'Quick Node Clone Setting'
   requirements:
     _permission: 'Administer Quick Node Clone Settings'
+quick_node_clone.paragraphsettingsform:
+  path: '/admin/config/quick-node-clone-paragraph'
+  defaults:
+    _form: '\Drupal\quick_node_clone\Form\QuickNodeParagraphCloneSettingForm'
+    _title: 'Quick Node Paragraph Clone Setting'
+  requirements:
+    _permission: 'Administer Quick Node Paragraph Clone Settings'
