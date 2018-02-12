@@ -106,7 +106,7 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
 
           // Each entity will be duplicated, so we won't be editing the same as the parent in every clone.
           if (!$translated_node->get($field_name)->isEmpty()) {
-            foreach ($translated_node->get($field_name) as $key => $value) {
+            foreach ($translated_node->get($field_name) as $value) {
               if ($value->entity instanceof FieldableEntityInterface) {
                 $value->entity = $value->entity->createDuplicate();
                 foreach ($value->entity->getFieldDefinitions() as $field_definition) {
