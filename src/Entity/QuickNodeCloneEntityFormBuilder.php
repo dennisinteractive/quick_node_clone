@@ -106,17 +106,19 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
           if (!$translated_node->get($field_name)->isEmpty()) {
             foreach ($translated_node->get($field_name) as $value) {
               if ($value->entity) {
+                $bundle_config_key = $value->entity->bundle();
                 $value->entity = $value->entity->createDuplicate();
                 foreach ($value->entity->getFieldDefinitions() as $field_definition) {
                   $field_storage_definition = $field_definition->getFieldStorageDefinition();
-                  $pfield_settings = $field_storage_definition->getSettings();
-                  $pfield_name = $field_storage_definition->getName();
+                  $entity_field_settings = $field_storage_definition->getSettings();
+                  $entity_field_name = $field_storage_definition->getName();
 
                   // Check whether this field is excluded and if so unset.
-                  if ($this->excludeParagraphField($pfield_name)) {
-                    unset($value->entity->{$pfield_name});
+                  if ($this->excludeParagraphField($entity_field_name, $bundle_config_key)) {
+                    unset($value->entity->{$entity_field_name});
                   }
-                  $this->moduleHandler->alter('cloned_node_paragraph_field', $value->entity, $pfield_name, $pfield_settings);
+
+                  $this->moduleHandler->alter('cloned_node_entity_field', $value->entity, $entity_field_name, $entity_field_settings);
                 }
               }
             }
@@ -149,13 +151,13 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
    *
    * @return bool
    */
-  public function excludeParagraphField($pfield_name) {
-    $paragraph_bundles = $this->entityTypeBundleInfo->getBundleInfo('paragraph');
-    foreach ($paragraph_bundles as $paragraph => $p) {
-      if ($excludeParagraphs = $this->getConfigSettings($paragraph)) {
+  public function excludeParagraphField($entity_field_name, $bundle_config_key) {
+    $excludeBundles = $this->getConfigSettings('para');
+    foreach ($excludeBundles as $bundle) {
+      if ($excludeParagraphs = $this->getConfigSettings($bundle)) {
         foreach ($excludeParagraphs as $excludeParagraph) {
-          if ($pfield_name === $excludeParagraph) {
-           return TRUE;
+          if ($entity_field_name === $excludeParagraph && $bundle === $bundle_config_key) {
+            return TRUE;
           }
         }
       }
