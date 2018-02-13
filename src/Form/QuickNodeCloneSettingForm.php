@@ -132,10 +132,8 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
       }
     }
     foreach ($formvalues as $key => $values) {
-      echo $key . ' ' . $values;
       $this->config('quick_node_clone.settings')->set($key, $values)->save();
     }
-    exit;
   }
 
   public static function fieldsCallback(array $form, FormStateInterface $form_state) {
