@@ -147,7 +147,8 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
   /**
    * Check whether to exclude the paragraph field.
    *
-   * @param $pfield_name
+   * @param $entity_field_name
+   * @param $bundle_config_key
    *
    * @return bool
    */
