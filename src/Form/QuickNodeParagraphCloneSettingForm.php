@@ -141,7 +141,6 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $form_state->cleanValues();
     $formvalues = $form_state->getValues();
     foreach ($formvalues['para'] as $key => $values) {
       if (empty($value)) {
