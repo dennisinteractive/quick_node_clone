@@ -62,9 +62,11 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
   /**
    * QuickNodeCloneEntityFormBuilder constructor.
    *
+   * @param \Drupal\Core\Form\FormBuilderInterface $formBuilder
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entityTypeBundleInfo
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entityTypeManager
    */
   public function __construct (FormBuilderInterface $formBuilder, EntityTypeBundleInfoInterface $entityTypeBundleInfo, ConfigFactoryInterface $configFactory, ModuleHandlerInterface $moduleHandler, EntityTypeManagerInterface $entityTypeManager) {
     $this->formBuilder = $formBuilder;
