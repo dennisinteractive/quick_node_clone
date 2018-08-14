@@ -92,7 +92,7 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
       $translated_node = $this->cloneParagraphs($translated_node);
       $prepend_text = "";
       $config = $this->getConfigSettings('quick_node_clone.settings');
-      if(!empty($config->get('text_to_prepend_to_title'))) {
+      if(!empty($config->getConfigSettings('text_to_prepend_to_title'))) {
         $prepend_text = $config->get('text_to_prepend_to_title') . " ";
       }
       $translated_node->setTitle(t($prepend_text . '@title', ['@title' => $original_entity->getTitle()], ['langcode' => $langcode]));
