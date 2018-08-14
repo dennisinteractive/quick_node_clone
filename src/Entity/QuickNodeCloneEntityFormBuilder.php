@@ -161,8 +161,8 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
               }
             }
           }
-          $this->moduleHandler->alter('cloned_node', $node, $field_name, $field_settings);
         }
+        $this->moduleHandler->alter('cloned_node', $node, $field_name, $field_settings);
       }
     }
     return $node;
