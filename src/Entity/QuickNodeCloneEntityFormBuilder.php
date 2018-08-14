@@ -90,10 +90,11 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
       /** @var \Drupal\node\Entity\Node $translated_node */
       $translated_node = $new_node->getTranslation($langcode);
       $translated_node = $this->cloneParagraphs($translated_node);
+
       $prepend_text = "";
-      $config = $this->getConfigSettings('quick_node_clone.settings');
-      if(!empty($config->getConfigSettings('text_to_prepend_to_title'))) {
-        $prepend_text = $config->get('text_to_prepend_to_title') . " ";
+      $config = $this->getConfigSettings('text_to_prepend_to_title');
+      if (!empty($config)) {
+        $prepend_text = $config . " ";
       }
       $translated_node->setTitle(t($prepend_text . '@title', ['@title' => $original_entity->getTitle()], ['langcode' => $langcode]));
     }
