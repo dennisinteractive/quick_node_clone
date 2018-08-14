@@ -130,44 +130,6 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
    *   The node with cloned paragraph fields.
    */
   public function cloneParagraphs($node) {
-    foreach ($node->getFieldDefinitions() as $field_definition) {
-      $field_storage_definition = $field_definition->getFieldStorageDefinition();
-      $field_settings = $field_storage_definition->getSettings();
-      $field_name = $field_storage_definition->getName();
-      if (isset($field_settings['target_type']) && $field_settings['target_type'] == "paragraph") {
-
-          // Each paragraph entity will be duplicated, so we won't be editing the same as the parent in every clone.
-          if (!$translated_node->get($field_name)->isEmpty()) {
-            foreach ($translated_node->get($field_name) as $value) {
-              if ($value->entity) {
-                $value->entity = $value->entity->createDuplicate();
-                foreach($value->entity->getFieldDefinitions() as $field_definition) {
-                  $field_storage_definition = $field_definition->getFieldStorageDefinition();
-                  $pfield_settings = $field_storage_definition->getSettings();
-                  $pfield_name = $field_storage_definition->getName();
-                  \Drupal::moduleHandler()->alter('cloned_node_paragraph_field', $value->entity, $pfield_name, $pfield_settings);
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    return $node;
-  }
-
-  /**
-   * Clone the paragraphs of a designated node. If we do not clone the
-   * paragraphs attached to the node, the linked paragraphs will be linked
-   * to two nodes which is not ideal.
-   *
-   * @param \Drupal\node\Entity\Node $node
-   *   The node to clone.
-   *
-   * @return \Drupal\node\Entity\Node
-   *   The node with cloned paragraph fields.
-   */
-  public function cloneParagraphs($node) {
     // Unset excluded fields.
     if ($excludeFields = $this->getConfigSettings($node->getType())) {
       foreach($excludeFields as $key => $excludeField) {
@@ -192,8 +154,8 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
                 $pfield_name = $field_storage_definition->getName();
 
                 // Check whether this field is excluded and if so unset.
-                if ($this->excludeParagraphField($entity_field_name, $bundle_config_key)) {
-                  unset($value->entity->{$entity_field_name});
+                if ($this->excludeParagraphField($pfield_name, $bundle_config_key)) {
+                  unset($value->entity->{$pfield_name});
                 }
 
                 \Drupal::moduleHandler()->alter('cloned_node_paragraph_field', $value->entity, $pfield_name, $pfield_settings);
