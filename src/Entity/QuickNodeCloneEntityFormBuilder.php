@@ -90,7 +90,6 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
       /** @var \Drupal\node\Entity\Node $translated_node */
       $translated_node = $new_node->getTranslation($langcode);
       $translated_node = $this->cloneParagraphs($translated_node);
-      \Drupal::moduleHandler()->alter('cloned_node', $node, $field_name, $field_settings);
       $prepend_text = "";
       $config = \Drupal::config('quick_node_clone.settings');
       if(!empty($config->get('text_to_prepend_to_title'))) {
@@ -158,10 +157,11 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
                   unset($value->entity->{$pfield_name});
                 }
 
-                \Drupal::moduleHandler()->alter('cloned_node_paragraph_field', $value->entity, $pfield_name, $pfield_settings);
+                $this->moduleHandler->alter('cloned_node_paragraph_field', $value->entity, $pfield_name, $pfield_settings);
               }
             }
           }
+          $this->moduleHandler->alter('cloned_node', $node, $field_name, $field_settings);
         }
       }
     }
