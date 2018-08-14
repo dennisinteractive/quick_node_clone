@@ -78,13 +78,13 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
       foreach ($paragraph_bundles as $paragraph => $label) {
         $para_bundle_list[$paragraph] = $label['label'];
       }
-      $form['para'] = [
+      $form['paragraphs'] = [
         '#type' => 'checkboxes',
         '#title' => 'Paragraph Types',
         '#options' => $para_bundle_list,
-        '#default_value' => ($this->getSettings('para')) ? $this->getSettings('para') : [],
+        '#default_value' => ($this->getSettings('paragraphs')) ? $this->getSettings('paragraphs') : [],
         '#ajax' => [
-          'callback' => 'Drupal\quick_node_clone\Form\QuickNodeParagraphCloneSettingForm::paraFieldsCallback',
+          'callback' => 'Drupal\quick_node_clone\Form\QuickNodeParagraphCloneSettingForm::paragraphFieldsCallback',
           'wrapper' => 'pfields-list',
         ],
       ];
@@ -95,10 +95,10 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
         '#suffix' => '</div>',
         '#open' => TRUE,
         '#title' => 'Fields',
-        '#description' => $this->getParaDescription($form_state),
+        '#description' => $this->getParagraphDescription($form_state),
       ];
 
-      if ($paragraph_fields = $this->getParaFields($form_state)) {
+      if ($paragraph_fields = $this->getparagraphFields($form_state)) {
         foreach ($paragraph_fields as $k => $value) {
           if (!empty($value)) {
             $foptions = [];
@@ -143,7 +143,7 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $form_state->cleanValues();
     $formvalues = $form_state->getValues();
-    foreach ($formvalues['para'] as $key => $values) {
+    foreach ($formvalues['paragraphs'] as $key => $values) {
       if (empty($value)) {
         $this->config('quick_node_clone.settings')->clear($key)->save();
       }
@@ -153,7 +153,7 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
     }
   }
 
-  public static function paraFieldsCallback(array $form, FormStateInterface $form_state) {
+  public static function paragraphFieldsCallback(array $form, FormStateInterface $form_state) {
     return $form['pfields'];
   }
 
@@ -164,12 +164,12 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
    *
    * @return string
    */
-  public function getParaDescription($form_state) {
+  public function getParagraphDescription($form_state) {
     $desc = "No paragraph selected";
-    if ($form_state->getValue('para') != NULL && array_filter($form_state->getValue('para'))) {
+    if ($form_state->getValue('paragraphs') != NULL && array_filter($form_state->getValue('paragraphs'))) {
       $desc = '';
     }
-    if (!empty($this->getSettings('para')) && array_filter($this->getSettings('para'))) {
+    if (!empty($this->getSettings('paragraphs')) && array_filter($this->getSettings('paragraphs'))) {
       $desc = '';
     }
     return $desc;
@@ -182,14 +182,14 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
    *
    * @return array|mixed|null
    */
-  public function getParaFields($form_state) {
+  public function getparagraphFields($form_state) {
     $para_bundles = NULL;
-    if ($form_state->getValue('para') != NULL && array_filter($form_state->getValue('para'))) {
-      $para_bundles = $form_state->getValue('para');
+    if ($form_state->getValue('paragraphs') != NULL && array_filter($form_state->getValue('paragraphs'))) {
+      $para_bundles = $form_state->getValue('paragraphs');
     }
     else {
-      if (!empty($this->getSettings('para')) && array_filter($this->getSettings('para'))) {
-        $para_bundles = $this->getSettings('para');
+      if (!empty($this->getSettings('paragraphs')) && array_filter($this->getSettings('paragraphs'))) {
+        $para_bundles = $this->getSettings('paragraphs');
       }
     }
     return $para_bundles;

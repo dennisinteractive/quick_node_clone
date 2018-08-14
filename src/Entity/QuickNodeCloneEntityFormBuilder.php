@@ -215,7 +215,7 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
    * @return bool
    */
   public function excludeParagraphField($entity_field_name, $bundle_config_key) {
-    $excludeBundles = $this->getConfigSettings('para');
+    $excludeBundles = $this->getConfigSettings('paragraphs');
     foreach ($excludeBundles as $bundle) {
       if ($excludeParagraphs = $this->getConfigSettings($bundle)) {
         foreach ($excludeParagraphs as $excludeParagraph) {
