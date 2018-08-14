@@ -86,7 +86,7 @@ class QuickNodeCloneNodeController extends NodeController {
    */
   public function clonePageTitle($node) {
     $prepend_text = "";
-    $config = $this->getConfigSettings('quick_node_clone.settings');
+    $config = \Drupal::config('quick_node_clone.settings');
     if(!empty($config->get('text_to_prepend_to_title'))) {
       $prepend_text = $config->get('text_to_prepend_to_title') . " ";
     }

@@ -100,7 +100,7 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
     }
 
     // Get the form object for the entity defined in entity definition
-    $form_object = $this->entityManager->getFormObject($new_node->getEntityTypeId(), $operation);
+    $form_object = $this->entityTypeManager->getFormObject($new_node->getEntityTypeId(), $operation);
 
     // Assign the form's entity to our duplicate!
     $form_object->setEntity($new_node);
