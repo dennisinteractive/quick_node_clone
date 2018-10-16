@@ -131,7 +131,7 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
    * @return \Drupal\node\Entity\Node
    *   The node with cloned paragraph fields.
    */
-  public function cloneParagraphs($node) {
+  public function cloneParagraphs(Node $node) {
     // Unset excluded fields.
     if ($excludeFields = $this->getConfigSettings($node->getType())) {
       foreach($excludeFields as $key => $excludeField) {
