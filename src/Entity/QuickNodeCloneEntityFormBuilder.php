@@ -7,6 +7,7 @@ use Drupal\Core\Form\FormBuilderInterface;
 use Drupal\Core\Entity\EntityFormBuilder;
 use Drupal\Core\Form\FormState;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\node\Entity\Node;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -79,7 +80,7 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
   /**
    * {@inheritdoc}
    */
-  public function getForm(EntityInterface $original_entity, $operation = 'default', array $form_state_additions = array()) {
+  public function getForm(EntityInterface $original_entity, $operation = 'default', array $form_state_additions = []) {
 
     // Clone the node using the awesome createDuplicate() core function.
     /** @var \Drupal\node\Entity\Node $new_node */
@@ -119,9 +120,10 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
   }
 
   /**
-   * Clone the paragraphs of a designated node. If we do not clone the
-   * paragraphs attached to the node, the linked paragraphs will be linked
-   * to two nodes which is not ideal.
+   * Clone the paragraphs of a node.
+   *
+   * If we do not clone the paragraphs attached to the node, the linked
+   * paragraphs would be linked to two nodes which is not ideal.
    *
    * @param \Drupal\node\Entity\Node $node
    *   The node to clone.

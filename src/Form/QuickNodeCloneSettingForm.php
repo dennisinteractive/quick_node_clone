@@ -10,6 +10,9 @@ use Drupal\node\Entity\NodeType;
 use Drupal\field\Entity\FieldConfig;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Module settings form.
+ */
 class QuickNodeCloneSettingForm extends ConfigFormBase {
 
   /**
