@@ -83,14 +83,17 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
       '#ajax' => [
         'callback' => 'Drupal\quick_node_clone\Form\QuickNodeCloneSettingForm::fieldsCallback',
         'wrapper' => 'fields-list',
+        'method' => 'replace',
       ],
     ];
 
     $form['fields'] = [
-      '#type' => 'details',
+      '#type' => 'container',
       '#open' => TRUE,
       '#title' => 'Fields',
       '#description' => $this->getDescription($form_state),
+      '#prefix' => '<div id="fields-list">',
+      '#suffix' => '</div>',
     ];
 
     if ($selected_nodes = $this->getSelectedNodeTypes($form_state)) {
