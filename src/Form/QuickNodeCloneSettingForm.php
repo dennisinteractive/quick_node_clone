@@ -75,12 +75,11 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
       '#default_value' => $this->getSettings('text_to_prepend_to_title'),
       '#description' => $this->t('Enter text to add to the title of a cloned node to help content editors. A space will be added between this text and the title. Example: "Clone of"'),
     ];
-
     $form['nodeTypes'] = [
       '#type' => 'checkboxes',
       '#title' => 'Content Types',
       '#options' => $this->getNodeTypes(),
-      '#default_value' => $this->getSettings('nodeTypes'),
+      '#default_value' => !is_null($this->getSettings('nodeTypes')) ? $this->getSettings('nodeTypes') : [],
       '#ajax' => [
         'callback' => 'Drupal\quick_node_clone\Form\QuickNodeCloneSettingForm::fieldsCallback',
         'wrapper' => 'fields-list',
@@ -218,6 +217,7 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    */
   public function getSettings($value) {
     $settings = $this->configFactory->get('quick_node_clone.settings')->get($value);
+
     return $settings;
   }
 }
