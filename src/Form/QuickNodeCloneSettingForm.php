@@ -75,11 +75,19 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
       '#default_value' => $this->getSettings('text_to_prepend_to_title'),
       '#description' => $this->t('Enter text to add to the title of a cloned node to help content editors. A space will be added between this text and the title. Example: "Clone of"'),
     ];
-    $form['nodeTypes'] = [
+    $form['exclude'] = [
+      '#type' => 'fieldset',
+      '#title' => $this->t('Exclusion list'),
+    ];
+    $form['exclude']['description'] = [
+      '#markup' => $this->t('You can select fields that you do not want to be included when the node is cloned.'),
+    ];
+    $form['exclude']['nodeTypes'] = [
       '#type' => 'checkboxes',
-      '#title' => 'Content Types',
+      '#title' => $this->t('Content Types'),
       '#options' => $this->getNodeTypes(),
       '#default_value' => !is_null($this->getSettings('nodeTypes')) ? $this->getSettings('nodeTypes') : [],
+      '#description' => $this->t('Select content types above and you will see a list of fields that can be excluded.'),
       '#ajax' => [
         'callback' => 'Drupal\quick_node_clone\Form\QuickNodeCloneSettingForm::fieldsCallback',
         'wrapper' => 'fields-list',
@@ -87,10 +95,10 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
       ],
     ];
 
-    $form['fields'] = [
-      '#type' => 'container',
+    $form['exclude']['fields'] = [
+      '#type' => 'details',
       '#open' => TRUE,
-      '#title' => 'Fields',
+      '#title' => $this->t('Fields'),
       '#description' => $this->getDescription($form_state),
       '#prefix' => '<div id="fields-list">',
       '#suffix' => '</div>',
@@ -106,14 +114,14 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
             if ($f instanceof FieldConfig) {
               $options[$f->getName()] = $f->getLabel();
             }
-            $form['fields']['nodeTypes_' . $value] = [
+            $form['exclude']['fields']['nodeTypes_' . $value] = [
               '#type' => 'details',
               '#title' => $value,
               '#open' => TRUE,
             ];
-            $form['fields']['nodeTypes_' . $value][$value] = [
+            $form['exclude']['fields']['nodeTypes_' . $value][$value] = [
               '#type' => 'checkboxes',
-              '#title' => 'Fields for ' . $value,
+              '#title' => $this->t('Fields for @value', ['@value' => $value]),
               '#default_value' => $this->getDefaultFields($value),
               '#options' => $options,
             ];
@@ -142,7 +150,7 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
   }
 
   public static function fieldsCallback(array $form, FormStateInterface $form_state) {
-    return $form['fields'];
+    return $form['exclude']['fields'];
   }
 
   /**
@@ -186,7 +194,7 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    * @return string
    */
   public function getDescription($form_state) {
-    $desc = "No content Types Selected";
+    $desc = $this->t('No content Types Selected');
     if ($form_state->getValue('nodeTypes') != NULL && array_filter($form_state->getValue('nodeTypes'))) {
       $desc = '';
     }

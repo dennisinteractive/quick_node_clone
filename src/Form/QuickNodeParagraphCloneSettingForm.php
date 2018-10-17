@@ -78,24 +78,33 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
       foreach ($paragraph_bundles as $paragraph => $label) {
         $para_bundle_list[$paragraph] = $label['label'];
       }
-      $form['paragraphs'] = [
+      $form['exclude'] = [
+        '#type' => 'fieldset',
+        '#title' => $this->t('Exclusion list'),
+      ];
+      $form['exclude']['description'] = [
+        '#markup' => $this->t('You can select fields that you do not want to be included when the paragraph is cloned.'),
+      ];
+      $form['exclude']['paragraphs'] = [
         '#type' => 'checkboxes',
-        '#title' => 'Paragraph Types',
+        '#title' => $this->t('Paragraph Types'),
         '#options' => $para_bundle_list,
         '#default_value' => ($this->getSettings('paragraphs')) ? $this->getSettings('paragraphs') : [],
+        '#description' => $this->t('Select paragraph types above and you will see a list of fields that can be excluded.'),
         '#ajax' => [
           'callback' => 'Drupal\quick_node_clone\Form\QuickNodeParagraphCloneSettingForm::paragraphFieldsCallback',
           'wrapper' => 'pfields-list',
+          'method' => 'replace',
         ],
       ];
 
-      $form['pfields'] = [
+      $form['exclude']['pfields'] = [
         '#type' => 'details',
-        '#prefix' => '<div id = "pfields-list" >',
-        '#suffix' => '</div>',
         '#open' => TRUE,
-        '#title' => 'Fields',
+        '#title' => $this->t('Fields'),
         '#description' => $this->getParagraphDescription($form_state),
+        '#prefix' => '<div id="pfields-list" >',
+        '#suffix' => '</div>',
       ];
 
       if ($paragraph_fields = $this->getparagraphFields($form_state)) {
@@ -111,14 +120,14 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
               if (empty($foptions)) {
                 $description = "No Fields Available";
               }
-              $form['pfields']['paragraph_' . $k] = [
+              $form['exclude']['pfields']['paragraph_' . $k] = [
                 '#type' => 'details',
                 '#title' => $value,
                 '#open' => TRUE,
               ];
-              $form['pfields']['paragraph_' . $k][$k] = [
+              $form['exclude']['pfields']['paragraph_' . $k][$k] = [
                 '#type' => 'checkboxes',
-                '#title' => 'Fields',
+                '#title' => $this->t('Fields'),
                 '#default_value' => ($this->getSettings($k)) ? $this->getSettings($k) : [],
                 '#options' => $foptions,
                 '#description' => $description,
@@ -129,9 +138,9 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
       }
     }
     else {
-      $form['no_paragraph'] = [
+      $form['exclude']['no_paragraph'] = [
         '#type' => 'markup',
-        '#markup' => 'No paragraph available',
+        '#markup' => $this->t('No paragraph available'),
       ];
     }
     return parent::buildForm($form, $form_state);
@@ -154,7 +163,7 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
   }
 
   public static function paragraphFieldsCallback(array $form, FormStateInterface $form_state) {
-    return $form['pfields'];
+    return $form['exclude']['pfields'];
   }
 
   /**
@@ -165,7 +174,7 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
    * @return string
    */
   public function getParagraphDescription($form_state) {
-    $desc = "No paragraph selected";
+    $desc = $this->t('No paragraph selected');
     if ($form_state->getValue('paragraphs') != NULL && array_filter($form_state->getValue('paragraphs'))) {
       $desc = '';
     }
