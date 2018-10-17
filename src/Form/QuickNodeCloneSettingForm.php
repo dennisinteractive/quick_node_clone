@@ -139,14 +139,17 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $form_state->cleanValues();
     $formvalues = $form_state->getValues();
-    foreach ($formvalues['nodeTypes'] as $key => $values) {
-      if (empty($values)) {
-        $this->config('quick_node_clone.settings')->clear($key)->save();
+
+    // Build an array of excluded fields for each node type.
+    $node_types = [];
+    foreach (array_filter($formvalues['nodeTypes']) as $key => $type) {
+      if (!empty($formvalues[$type])) {
+        $node_types[$type] = array_values(array_filter($formvalues[$type]));
       }
     }
-    foreach ($formvalues as $key => $values) {
-      $this->config('quick_node_clone.settings')->set($key, $values)->save();
-    }
+
+    // Build config array.
+    $this->config('quick_node_clone.settings')->set('exclude.node', $node_types)->save();
   }
 
   public static function fieldsCallback(array $form, FormStateInterface $form_state) {
