@@ -3,7 +3,6 @@
 namespace Drupal\quick_node_clone\Form;
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\node\Entity\NodeType;
 
 /**
  * Module settings form.
@@ -11,26 +10,12 @@ use Drupal\node\Entity\NodeType;
 class QuickNodeCloneSettingForm extends QuickNodeCloneEntitySettingForm {
 
   /**
-   * The Entity Field Manager.
-   *
-   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
-   */
-  protected $entityFieldManager;
-
-  /**
-   * The Config Factory.
-   *
-   * @var \Drupal\Core\Config\ConfigFactoryInterface
-   */
-  protected $configFactory;
-
-  /**
    * The machine name of the entity type.
    *
-   * @var $entityType
-   *   The entity type i.e. node
+   * @var $entityTypeId
+   *   The entity type id i.e. node
    */
-  protected $entityType = 'node';
+  protected $entityTypeId = 'node';
 
   /**
    * {@inheritdoc}
@@ -61,6 +46,8 @@ class QuickNodeCloneSettingForm extends QuickNodeCloneEntitySettingForm {
     $form_state->cleanValues();
     $form_values = $form_state->getValues();
     $this->config('quick_node_clone.settings')->set('text_to_prepend_to_title', $form_values['text_to_prepend_to_title'])->save();
+
+    parent::submitForm($form, $form_state);
   }
 
 }
