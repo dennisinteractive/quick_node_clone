@@ -89,7 +89,7 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
         '#type' => 'checkboxes',
         '#title' => $this->t('Paragraph Types'),
         '#options' => $para_bundle_list,
-        '#default_value' => ($this->getSettings('paragraphs')) ? $this->getSettings('paragraphs') : [],
+        '#default_value' => !is_null($this->getSettings('exclude.paragraph')) ? array_keys($this->getSettings('exclude.paragraph')) : [],
         '#description' => $this->t('Select paragraph types above and you will see a list of fields that can be excluded.'),
         '#ajax' => [
           'callback' => 'Drupal\quick_node_clone\Form\QuickNodeParagraphCloneSettingForm::paragraphFieldsCallback',
@@ -162,7 +162,7 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
     }
 
     // Build config array.
-    $this->config('quick_node_clone.settings')->set('exclude.paragraphs', $node_types)->save();
+    $this->config('quick_node_clone.settings')->set('exclude.paragraph', $node_types)->save();
   }
 
   public static function paragraphFieldsCallback(array $form, FormStateInterface $form_state) {

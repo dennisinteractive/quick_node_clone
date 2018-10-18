@@ -82,11 +82,11 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
     $form['exclude']['description'] = [
       '#markup' => $this->t('You can select fields that you do not want to be included when the node is cloned.'),
     ];
-    $form['exclude']['nodeTypes'] = [
+    $form['exclude']['node_types'] = [
       '#type' => 'checkboxes',
       '#title' => $this->t('Content Types'),
       '#options' => $this->getNodeTypes(),
-      '#default_value' => !is_null($this->getSettings('nodeTypes')) ? $this->getSettings('nodeTypes') : [],
+      '#default_value' => !is_null($this->getSettings('exclude.node')) ? array_keys($this->getSettings('exclude.node')) : [],
       '#description' => $this->t('Select content types above and you will see a list of fields that can be excluded.'),
       '#ajax' => [
         'callback' => 'Drupal\quick_node_clone\Form\QuickNodeCloneSettingForm::fieldsCallback',
@@ -104,25 +104,26 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
       '#suffix' => '</div>',
     ];
 
-    if ($selected_nodes = $this->getSelectedNodeTypes($form_state)) {
-      foreach ($selected_nodes as $k => $value) {
-        if (!empty($value)) {
+    if ($selected_node_types = $this->getSelectedNodeTypes($form_state)) {
+      foreach ($selected_node_types as $node_type => $selected_fields) {
+        if (!empty($selected_fields)) {
           $options = [];
-
-          $fields = $this->entityFieldManager->getFieldDefinitions('node', $value);
-          foreach ($fields as $k => $f) {
+          $field_definitions = $this->entityFieldManager->getFieldDefinitions('node', $node_type);
+          foreach ($field_definitions as $k => $f) {
             if ($f instanceof FieldConfig) {
               $options[$f->getName()] = $f->getLabel();
             }
-            $form['exclude']['fields']['nodeTypes_' . $value] = [
+          }
+          if (!empty($options)) {
+            $form['exclude']['fields']['node_type_' . $node_type] = [
               '#type' => 'details',
-              '#title' => $value,
+              '#title' => $node_type,
               '#open' => TRUE,
             ];
-            $form['exclude']['fields']['nodeTypes_' . $value][$value] = [
+            $form['exclude']['fields']['node_type_' . $node_type][$node_type] = [
               '#type' => 'checkboxes',
-              '#title' => $this->t('Fields for @value', ['@value' => $value]),
-              '#default_value' => $this->getDefaultFields($value),
+              '#title' => $this->t('Fields for @node_type', ['@node_type' => $node_type]),
+              '#default_value' => $this->getDefaultFields($node_type),
               '#options' => $options,
             ];
           }
@@ -142,7 +143,7 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
 
     // Build an array of excluded fields for each node type.
     $node_types = [];
-    foreach (array_filter($formvalues['nodeTypes']) as $key => $type) {
+    foreach (array_filter($formvalues['node_types']) as $key => $type) {
       if (!empty($formvalues[$type])) {
         $node_types[$type] = array_values(array_filter($formvalues[$type]));
       }
@@ -163,11 +164,11 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    */
   public function getNodeTypes() {
     $node_type = NodeType::loadMultiple();
-    $nodeTypes = [];
+    $node_types = [];
     foreach ($node_type as $node => $nobj) {
-      $nodeTypes[$nobj->id()] = $nobj->label();
+      $node_types[$nobj->id()] = $nobj->label();
     }
-    return $nodeTypes;
+    return $node_types;
   }
 
   /**
@@ -179,11 +180,11 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    */
   public function getSelectedNodeTypes($form_state) {
     $selected_types = NULL;
-    if ($form_state->getValue('nodeTypes') != NULL && array_filter($form_state->getValue('nodeTypes'))) {
-      $selected_types = $form_state->getValue('nodeTypes');
+    if ($form_state->getValue('node_types') != NULL && array_filter($form_state->getValue('node_types'))) {
+      $selected_types = $form_state->getValue('node_types');
     }
-    if (!empty($this->getSettings('nodeTypes')) && array_filter($this->getSettings('nodeTypes'))) {
-      $selected_types = $this->getSettings('nodeTypes');
+    if (!empty($this->getSettings('exclude.node')) && array_filter($this->getSettings('exclude.node'))) {
+      $selected_types = $this->getSettings('exclude.node');
     }
 
     return $selected_types;
@@ -198,12 +199,13 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    */
   public function getDescription($form_state) {
     $desc = $this->t('No content Types Selected');
-    if ($form_state->getValue('nodeTypes') != NULL && array_filter($form_state->getValue('nodeTypes'))) {
+    if ($form_state->getValue('node_types') != NULL && array_filter($form_state->getValue('node_types'))) {
       $desc = '';
     }
-    if (!empty($this->getSettings('nodeTypes')) && array_filter($this->getSettings('nodeTypes'))) {
+    if (!empty($this->getSettings('exclude.node')) && array_filter($this->getSettings('exclude.node'))) {
       $desc = '';
     }
+
     return $desc;
   }
 
@@ -216,9 +218,10 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    */
   public function getDefaultFields($value) {
     $default_fields = [];
-    if (!empty($this->getSettings($value))) {
-      $default_fields = $this->getSettings($value);
+    if (!empty($this->getSettings('exclude.node.' . $value))) {
+      $default_fields = $this->getSettings('exclude.node.' . $value);
     }
+
     return $default_fields;
   }
 
