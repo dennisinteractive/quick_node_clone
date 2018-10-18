@@ -154,15 +154,15 @@ class QuickNodeParagraphCloneSettingForm extends ConfigFormBase {
     $formvalues = $form_state->getValues();
 
     // Build an array of excluded fields for each node type.
-    $node_types = [];
+    $bundle_names = [];
     foreach (array_filter($formvalues['paragraphs']) as $key => $type) {
       if (!empty($formvalues[$type])) {
-        $node_types[$type] = array_values(array_filter($formvalues[$type]));
+        $bundle_names[$type] = array_values(array_filter($formvalues[$type]));
       }
     }
 
     // Build config array.
-    $this->config('quick_node_clone.settings')->set('exclude.paragraph', $node_types)->save();
+    $this->config('quick_node_clone.settings')->set('exclude.paragraph', $bundle_names)->save();
   }
 
   public static function paragraphFieldsCallback(array $form, FormStateInterface $form_state) {
