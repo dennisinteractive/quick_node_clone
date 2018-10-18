@@ -7,7 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Module settings form.
  */
-class QuickNodeCloneSettingForm extends QuickNodeCloneEntitySettingForm {
+class QuickNodeCloneNodeSettingForm extends QuickNodeCloneEntitySettingForm {
 
   /**
    * The machine name of the entity type.
@@ -21,7 +21,7 @@ class QuickNodeCloneSettingForm extends QuickNodeCloneEntitySettingForm {
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'quick_node_clone_setting_form';
+    return 'quick_node_clone_node_setting_form';
   }
 
   /**

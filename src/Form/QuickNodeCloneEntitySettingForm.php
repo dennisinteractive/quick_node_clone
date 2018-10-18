@@ -78,7 +78,7 @@ abstract class QuickNodeCloneEntitySettingForm extends ConfigFormBase {
   }
 
   /**
-   * QuickNodeCloneSettingForm constructor.
+   * QuickNodeCloneEntitySettingForm constructor.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entityFieldManager
@@ -122,8 +122,8 @@ abstract class QuickNodeCloneEntitySettingForm extends ConfigFormBase {
       '#default_value' => array_keys($form_state->getValue('bundle_names')),
       '#description' => $this->t('Select entity types above and you will see a list of fields that can be excluded.'),
       '#ajax' => [
-        'callback' => 'Drupal\quick_node_clone\Form\QuickNodeCloneSettingForm::fieldsCallback',
-        'wrapper' => 'fields-list',
+        'callback' => 'Drupal\quick_node_clone\Form\QuickNodeCloneEntitySettingForm::fieldsCallback',
+        'wrapper' => 'fields-list-' . $this->getEntityTypeId(),
         'method' => 'replace',
       ],
     ];
@@ -133,7 +133,7 @@ abstract class QuickNodeCloneEntitySettingForm extends ConfigFormBase {
       '#open' => TRUE,
       '#title' => $this->t('Fields'),
       '#description' => $this->getDescription($form_state),
-      '#prefix' => '<div id="fields-list">',
+      '#prefix' => '<div id="fields-list-' . $this->getEntityTypeId() . '">',
       '#suffix' => '</div>',
     ];
 
