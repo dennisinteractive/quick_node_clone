@@ -9,7 +9,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\field\Entity\FieldConfig;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Drupal\quick_node_clone\QuickNodeCloneEntitySettingsFormInterface;
 
 /**
  * Abstract class to configure how entities are cloned.

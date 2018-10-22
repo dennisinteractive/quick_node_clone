@@ -1,6 +1,6 @@
 <?php
 
-namespace Drupal\quick_node_clone;
+namespace Drupal\quick_node_clone\Form;
 
 use Drupal\Core\Form\FormStateInterface;
 
