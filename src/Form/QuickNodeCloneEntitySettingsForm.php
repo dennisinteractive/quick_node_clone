@@ -86,6 +86,7 @@ abstract class QuickNodeCloneEntitySettingsForm extends ConfigFormBase implement
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface
    */
   public function __construct(ConfigFactoryInterface $configFactory, EntityFieldManagerInterface $entityFieldManager, EntityTypeBundleInfoInterface $entityTypeBundleInfo) {
+    parent::__construct($configFactory);
     $this->configFactory = $configFactory;
     $this->entityFieldManager = $entityFieldManager;
     $this->entityTypeBundleInfo = $entityTypeBundleInfo;
