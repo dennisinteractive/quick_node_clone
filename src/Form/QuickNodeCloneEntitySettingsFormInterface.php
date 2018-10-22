@@ -2,6 +2,8 @@
 
 namespace Drupal\quick_node_clone;
 
+use Drupal\Core\Form\FormStateInterface;
+
 /**
  * Provides an interface for an Clone Entity forms.
  */
@@ -44,7 +46,7 @@ interface QuickNodeCloneEntitySettingsFormInterface {
    *
    * @return mixed
    */
-  public function getSelectedBundles($form_state);
+  public function getSelectedBundles(FormStateInterface $form_state);
 
   /**
    * Returns the description field.
@@ -53,7 +55,7 @@ interface QuickNodeCloneEntitySettingsFormInterface {
    *
    * @return mixed
    */
-  public function getDescription($form_state);
+  public function getDescription(FormStateInterface $form_state);
 
   /**
    * Returns the default fields.

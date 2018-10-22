@@ -35,6 +35,7 @@ class QuickNodeCloneNodeForm extends NodeForm {
    * {@inheritdoc}
    */
   public function save(array $form, FormStateInterface $form_state) {
+    /** @var \Drupal\node\NodeInterface $node */
     $node = $this->entity;
     $insert = $node->isNew();
     $node->save();

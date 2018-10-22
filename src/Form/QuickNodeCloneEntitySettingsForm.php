@@ -212,7 +212,7 @@ abstract class QuickNodeCloneEntitySettingsForm extends ConfigFormBase implement
    *
    * @return array|mixed|null
    */
-  public function getSelectedBundles($form_state) {
+  public function getSelectedBundles(FormStateInterface $form_state) {
     $selected_types = NULL;
     $config_name = 'exclude.' . $this->getEntityTypeId();
     if (!empty($form_state->getValue('bundle_names'))) {
@@ -232,7 +232,7 @@ abstract class QuickNodeCloneEntitySettingsForm extends ConfigFormBase implement
    *
    * @return string
    */
-  public function getDescription($form_state) {
+  public function getDescription(FormStateInterface $form_state) {
     $desc = $this->t('No content types selected');
     $config_name = 'exclude.' . $this->getEntityTypeId();
     if (!empty($form_state->getValue('bundle_names')) && array_filter($form_state->getValue('bundle_names'))) {
