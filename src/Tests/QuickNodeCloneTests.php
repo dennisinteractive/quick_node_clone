@@ -7,9 +7,16 @@ use Drupal\simpletest\WebTestBase;
 /**
  * QuickNodeClone tests.
  *
- * @group quick_node_clone
+ * @group Quick Node Clone
  */
 class QuickNodeCloneTests extends WebTestBase {
+
+  /**
+   * The installation profile to use with this test.
+   *
+   * @var string
+   */
+  protected $profile = 'standard';
 
   /**
    * Modules to enable.
@@ -31,47 +38,17 @@ class QuickNodeCloneTests extends WebTestBase {
   protected function setUp() {
     parent::setUp();
 
-    // Services to test.
-    $this->services = ['facebook', 'email', 'tumblr', 'twitter'];
-
     // Create admin user.
-    $this->adminUser = $this->drupalCreateUser(array(
+    $this->adminUser = $this->drupalCreateUser([
       'access administration pages',
-      'administer quick_node_clone',
-      'administer blocks',
+      'Administer Quick Node Clone Settings',
+      'clone page content',
       'access contextual links',
-    ), 'QuickNodeClone Admin', TRUE); //@todo remove TRUE
-  }
-
-  /**
-   * Check that an element exists in HTML markup.
-   *
-   * @param $xpath
-   *   An XPath expression.
-   * @param array $arguments
-   *   (optional) An associative array of XPath replacement tokens to pass to
-   *   DrupalWebTestCase::buildXPathQuery().
-   * @param $message
-   *   The message to display along with the assertion.
-   * @param $group
-   *   The type of assertion - examples are "Browser", "PHP".
-   *
-   * @return
-   *   TRUE if the assertion succeeded, FALSE otherwise.
-   */
-  protected function assertElementByXPath($xpath, array $arguments = array(), $message, $group = 'Other') {
-    $elements = $this->xpath($xpath, $arguments);
-    return $this->assertTrue(!empty($elements[0]), $message, $group);
-  }
-
-  function testLinkToConfig() {
-    $this->drupalLogin($this->adminUser);
-    $this->drupalGet('admin/modules');
-    $link = $this->xpath('//a[contains(@href, :href) and contains(@id, :id)]', [
-      ':href' => 'admin/structure/quick_node_clone',
-      ':id' => 'edit-modules-quick_node_clone-links-configure'
+      'access administration pages',
+      'create page content',
+      'edit any page content',
+      'delete any page content',
     ]);
-    $this->assertTrue(count($link) === 1, 'Link to config is present');
   }
 
   /**
@@ -79,7 +56,21 @@ class QuickNodeCloneTests extends WebTestBase {
    */
   function testAdminUI() {
     $this->drupalLogin($this->adminUser);
-    $this->drupalGet('admin/structure/quick_node_clone/default');
+
+    $this->drupalGet('admin/config/quick-node-clone');
+
+    $title = $this->randomGenerator->sentences(10);
+    $body =  $this->randomGenerator->word(10);
+    $edit = [
+      'title[0][value]' => $title,
+      'body[0][value]' => $body,
+      'body[0][format]' => 'basic_html',
+    ];
+    $this->drupalPostForm('node/add/page', $edit, t('Save'));
+    $this->assertRaw($title);
+    $this->assertRaw($body);
+
+    $this->drupalGet('admin/config/quick-node-clone');
   }
 
 }
