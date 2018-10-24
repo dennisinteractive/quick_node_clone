@@ -52,25 +52,37 @@ class QuickNodeCloneTests extends WebTestBase {
   }
 
   /**
+  /**
    * Admin UI.
    */
   function testAdminUI() {
     $this->drupalLogin($this->adminUser);
 
+    // Configure module.
     $this->drupalGet('admin/config/quick-node-clone');
-
-    $title = $this->randomGenerator->sentences(10);
-    $body =  $this->randomGenerator->word(10);
     $edit = [
-      'title[0][value]' => $title,
-      'body[0][value]' => $body,
+      'text_to_prepend_to_title' => 'Cloned from',
+    ];
+    $this->drupalPostForm('admin/config/quick-node-clone', $edit, t('Save configuration'));
+
+    // Create a basic page.
+    $title_value = $this->randomGenerator->sentences(10);
+    $body_value =  $this->randomGenerator->word(10);
+    $edit = [
+      'title[0][value]' => $title_value,
+      'body[0][value]' => $body_value,
       'body[0][format]' => 'basic_html',
     ];
     $this->drupalPostForm('node/add/page', $edit, t('Save'));
-    $this->assertRaw($title);
-    $this->assertRaw($body);
+    $this->assertRaw($title_value);
+    $this->assertRaw($body_value);
 
-    $this->drupalGet('admin/config/quick-node-clone');
+    // Clone node.
+    $this->clickLink('Clone');
+    $node = $this->getNodeByTitle($title_value);
+    $this->drupalPostForm('clone/' . $node->id() . '/quick_clone', [], 'Save');
+    $this->assertRaw('Cloned from ' . $title_value);
+    $this->assertRaw($body_value);
   }
 
 }
