@@ -88,6 +88,10 @@ class QuickNodeCloneExcludeParagraphFieldsTests extends ParagraphsTestBase {
       'clone paragraphed_test content',
     ]);
 
+    // Test the form.
+    $this->drupalGet('admin/config/quick-node-clone');
+    $this->assertFieldByName('field_paragraphs[0][subform][field_text1][0][value]', 'First text');
+
     // Creates a node.
     $this->createNode();
 
