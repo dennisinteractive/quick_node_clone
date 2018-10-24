@@ -39,13 +39,6 @@ class QuickNodeCloneExcludeParagraphFieldsTests extends ParagraphsTestBase {
   protected function setUp() {
     parent::setUp();
 
-    $this->addParagraphedContentType('paragraphed_test', 'field_paragraphs', 'entity_reference_paragraphs');
-
-    $this->loginAsAdmin([
-      'create paragraphed_test content',
-      'edit any paragraphed_test content',
-    ]);
-
     // Crete paragraphs.
     $this->createParagraphs();
 
@@ -59,6 +52,12 @@ class QuickNodeCloneExcludeParagraphFieldsTests extends ParagraphsTestBase {
    * Creates the paragraphs used by the tests.
    */
   protected function createParagraphs() {
+    $this->addParagraphedContentType('paragraphed_test', 'field_paragraphs', 'entity_reference_paragraphs');
+
+    $this->loginAsAdmin([
+      'create paragraphed_test content',
+      'edit any paragraphed_test content',
+    ]);
 
     $paragraph_type = 'text_paragraph';
     $this->addParagraphsType($paragraph_type);
@@ -86,23 +85,25 @@ class QuickNodeCloneExcludeParagraphFieldsTests extends ParagraphsTestBase {
       'create paragraphed_test content',
       'edit any paragraphed_test content',
       'Administer Quick Node Clone Settings',
-      'clone page content',
+      'clone paragraphed_test content',
     ]);
 
     // Creates a node.
     $this->createNode();
 
     // Create a node with a Paragraph.
-    $text1 = 'recognizable_text 1';
-    $text2 = 'recognizable_text 2';
+    $this->drupalGet('node/add/paragraphed_test');
+    $title_value = $this->randomGenerator->word(10);
+    $text1 = $this->randomGenerator->word(10);
+    $text2 = $this->randomGenerator->word(10);
     $edit = [
-      'title[0][value]' => 'paragraphs_mode_test',
+      'title[0][value]' => $title_value,
       'field_paragraphs[0][subform][field_text1][0][value]' => $text1,
       'field_paragraphs[0][subform][field_text2][0][value]' => $text2,
     ];
     $this->drupalPostAjaxForm(NULL, [], 'field_paragraphs_text_paragraph_add_more');
     $this->drupalPostForm(NULL, $edit, t('Save'));
-    $node = $this->drupalGetNodeByTitle('paragraphs_mode_test');
+    $node = $this->drupalGetNodeByTitle($title_value);
 
     $this->drupalGet('node/' . $node->id() . '/edit');
     $this->assertFieldByName('field_paragraphs[0][subform][field_text1][0][value]', $text1);
@@ -111,33 +112,13 @@ class QuickNodeCloneExcludeParagraphFieldsTests extends ParagraphsTestBase {
     $this->assertText($text1);
     $this->assertText($text2);
 
-    // Test the form.
-    $edit = [
-      'text_to_prepend_to_title' => 'Cloned from',
-      'bundle_names[page]' => TRUE,
-      'page[body]' => TRUE,
-    ];
-    $this->drupalPostForm('admin/config/quick-node-clone-paragraph', $edit, t('Save configuration'));
-
-    // Create a basic page.
-    $title_value = $this->randomGenerator->word(10);
-    $body_value =  $this->randomGenerator->sentences(10);
-    $edit = [
-      'title[0][value]' => $title_value,
-      'body[0][value]' => $body_value,
-      'body[0][format]' => 'basic_html',
-    ];
-    $this->drupalPostForm('node/add/page', $edit, t('Save'));
-    $this->assertRaw($title_value);
-    $this->assertRaw($body_value);
-
     // Clone node.
     $this->clickLink('Clone');
-    $node = $this->getNodeByTitle($title_value);
     $this->drupalGet('clone/' . $node->id() . '/quick_clone');
     $this->drupalPostForm('clone/' . $node->id() . '/quick_clone', [], 'Save');
     $this->assertRaw('Cloned from ' . $title_value);
-    $this->assertNoRaw($body_value);
+    $this->assertText($text1);
+    $this->assertNoText($text2);
   }
 
 }
