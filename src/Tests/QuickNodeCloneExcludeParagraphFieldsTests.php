@@ -41,11 +41,6 @@ class QuickNodeCloneExcludeParagraphFieldsTests extends ParagraphsTestBase {
 
     // Crete paragraphs.
     $this->createParagraphs();
-
-    // Since we don't have ajax here, we need to set the config manually then test the form.
-    \Drupal::configFactory()->getEditable('quick_node_clone.settings')
-      ->set('exclude.paragraph.paragraphed_test', ['field_text2'])
-      ->save();
   }
 
   /**
@@ -67,13 +62,11 @@ class QuickNodeCloneExcludeParagraphFieldsTests extends ParagraphsTestBase {
     static::fieldUIAddNewField('admin/structure/paragraphs_type/' . $paragraph_type, 'text1', 'Text 1', 'string', [], []);
     static::fieldUIAddNewField('admin/structure/paragraphs_type/' . $paragraph_type, 'text2', 'Text 2', 'string', [], []);
     $this->drupalPostAjaxForm('node/add/paragraphed_test', [], 'field_paragraphs_text_paragraph_add_more');
-  }
 
-  /**
-   * Creates nodes used by the tests.
-   */
-  protected function createNode() {
-
+    // Add config to exclude text 2 field.
+    \Drupal::configFactory()->getEditable('quick_node_clone.settings')
+      ->set('exclude.paragraph.' . $paragraph_type, ['field_text2'])
+      ->save();
   }
 
   /**
@@ -89,13 +82,10 @@ class QuickNodeCloneExcludeParagraphFieldsTests extends ParagraphsTestBase {
     ]);
 
     // Test the form.
-    $this->drupalGet('admin/config/quick-node-clone');
-    $this->assertFieldByName('field_paragraphs[0][subform][field_text1][0][value]', 'First text');
+    $this->drupalGet('admin/config/quick-node-clone-paragraph');
+    $this->assertFieldByName('text_paragraph[field_text2]', 'field_text2');
 
-    // Creates a node.
-    $this->createNode();
-
-    // Create a node with a Paragraph.
+    // Create a node and add two Paragraphs.
     $this->drupalGet('node/add/paragraphed_test');
     $title_value = $this->randomGenerator->word(10);
     $text1 = $this->randomGenerator->word(10);
@@ -119,9 +109,15 @@ class QuickNodeCloneExcludeParagraphFieldsTests extends ParagraphsTestBase {
     // Clone node.
     $this->clickLink('Clone');
     $this->drupalGet('clone/' . $node->id() . '/quick_clone');
+    $this->assertFieldByName('field_paragraphs[0][subform][field_text1][0][value]', $text1);
+    $this->assertFieldByName('field_paragraphs[0][subform][field_text2][0][value]', '');
     $this->drupalPostForm('clone/' . $node->id() . '/quick_clone', [], 'Save');
-    $this->assertRaw('Cloned from ' . $title_value);
+    $this->assertRaw('Clone of ' . $title_value);
+
+    // Make sure text_2 paragraph was cloned.
     $this->assertText($text1);
+
+    // Make sure text_2 paragraph was not cloned.
     $this->assertNoText($text2);
   }
 

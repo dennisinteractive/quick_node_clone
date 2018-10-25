@@ -23,4 +23,4 @@ quick_node_clone.paragraph_settings_form:
     _form: '\Drupal\quick_node_clone\Form\QuickNodeCloneParagraphSettingsForm'
     _title: 'Quick Node Paragraph Clone Setting'
   requirements:
-    _permission: 'Administer Quick Node Paragraph Clone Settings'
+    _permission: 'Administer Quick Node Clone Settings'
