@@ -86,28 +86,36 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
       /** @var \Drupal\node\Entity\Node $translated_node */
       $translated_node = $new_node->getTranslation($langcode);
       $translated_node = $this->cloneParagraphs($translated_node);
+      $this->moduleHandler->alter('cloned_node', $translated_node);
+
+      // Unset excluded fields.
+      $config_name = 'exclude.node.' . $translated_node->getType();
+      if ($exclude_fields = $this->getConfigSettings($config_name)) {
+        foreach ($exclude_fields as $key => $field) {
+          unset($translated_node->{$field});
+        }
+      }
 
       $prepend_text = "";
       $config = $this->getConfigSettings('text_to_prepend_to_title');
       if (!empty($config)) {
         $prepend_text = $config . " ";
       }
-      $translated_node->setTitle(t($prepend_text . '@title', ['@title' => $original_entity->getTitle()], ['langcode' => $langcode]));
+      $translated_node->setTitle(t($prepend_text . '@title', ['@title' => $translated_node->getTitle()], ['langcode' => $langcode]));
     }
 
     // Get the form object for the entity defined in entity definition
-    $form_object = $this->entityTypeManager->getFormObject($new_node->getEntityTypeId(), $operation);
+    $form_object = $this->entityTypeManager->getFormObject($translated_node->getEntityTypeId(), $operation);
 
     // Assign the form's entity to our duplicate!
-    $form_object->setEntity($new_node);
+    $form_object->setEntity($translated_node);
 
     $form_state = (new FormState())->setFormState($form_state_additions);
     $new_form = $this->formBuilder->buildForm($form_object, $form_state);
 
     // If we are cloning addresses, we need to reset our delta counter
     // once the form is built.
-    $tempstore = \Drupal::service('user.private_tempstore')
-      ->get('quick_node_clone');
+    $tempstore = \Drupal::service('user.private_tempstore')->get('quick_node_clone');
     if ($tempstore->get('address_initial_value_delta') != NULL) {
       $tempstore->set('address_initial_value_delta', NULL);
     }
@@ -128,14 +136,6 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
    *   The node with cloned paragraph fields.
    */
   public function cloneParagraphs(Node $node) {
-    // Unset excluded fields.
-    $config_name = 'exclude.node.' . $node->getType();
-    if ($exclude_fields = $this->getConfigSettings($config_name)) {
-      foreach ($exclude_fields as $key => $field) {
-        unset($node->{$field});
-      }
-    }
-
     foreach ($node->getFieldDefinitions() as $field_definition) {
       $field_storage_definition = $field_definition->getFieldStorageDefinition();
       $field_settings = $field_storage_definition->getSettings();
@@ -161,7 +161,6 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
             }
           }
         }
-        $this->moduleHandler->alter('cloned_node', $node, $field_name, $field_settings);
       }
     }
 
