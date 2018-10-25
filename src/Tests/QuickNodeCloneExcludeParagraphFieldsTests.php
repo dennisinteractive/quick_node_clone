@@ -2,9 +2,7 @@
 
 namespace Drupal\quick_node_clone\Tests;
 
-//use Drupal\simpletest\WebTestBase;
 use Drupal\paragraphs\Tests\Classic\ParagraphsTestBase;
-//use Drupal\paragraphs\Entity\ParagraphsType;
 use Drupal\field_ui\Tests\FieldUiTestTrait;
 use Drupal\Tests\paragraphs\FunctionalJavascript\ParagraphsTestBaseTrait;
 use Drupal\paragraphs\Tests\Classic\ParagraphsCoreVersionUiTestTrait;
