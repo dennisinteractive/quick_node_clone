@@ -5,7 +5,7 @@ namespace Drupal\quick_node_clone\Tests;
 use Drupal\simpletest\WebTestBase;
 
 /**
- * QuickNodeClone tests.
+ * Tests node cloning.
  *
  * @group Quick Node Clone
  */
@@ -23,7 +23,7 @@ class QuickNodeCloneTests extends WebTestBase {
    *
    * @var array
    */
-  public static $modules = array('paragraphs', 'quick_node_clone');
+  public static $modules = array('quick_node_clone');
 
   /**
    * A user with the 'Administer quick_node_clone' permission.
@@ -43,31 +43,26 @@ class QuickNodeCloneTests extends WebTestBase {
       'access administration pages',
       'Administer Quick Node Clone Settings',
       'clone page content',
-      'access contextual links',
-      'access administration pages',
       'create page content',
-      'edit any page content',
-      'delete any page content',
     ]);
   }
 
   /**
-  /**
-   * Admin UI.
+   * Test node clone.
    */
-  function testAdminUI() {
+  function testNodeClone() {
     $this->drupalLogin($this->adminUser);
 
     // Configure module.
-    $this->drupalGet('admin/config/quick-node-clone');
+    //$this->drupalGet('admin/config/quick-node-clone');
     $edit = [
       'text_to_prepend_to_title' => 'Cloned from',
     ];
     $this->drupalPostForm('admin/config/quick-node-clone', $edit, t('Save configuration'));
 
     // Create a basic page.
-    $title_value = $this->randomGenerator->sentences(10);
-    $body_value =  $this->randomGenerator->word(10);
+    $title_value = $this->randomGenerator->word(10);
+    $body_value =  $this->randomGenerator->sentences(10);
     $edit = [
       'title[0][value]' => $title_value,
       'body[0][value]' => $body_value,
