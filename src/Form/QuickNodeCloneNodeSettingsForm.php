@@ -2,39 +2,40 @@
 
 namespace Drupal\quick_node_clone\Form;
 
-use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Module settings form.
  */
-class QuickNodeCloneSettingForm extends ConfigFormBase {
+class QuickNodeCloneNodeSettingsForm extends QuickNodeCloneEntitySettingsForm {
 
   /**
-   * {@inheritdoc}
+   * The machine name of the entity type.
+   *
+   * @var $entityTypeId
+   *   The entity type id i.e. node
    */
-  public function getEditableConfigNames() {
-    return ['quick_node_clone.settings'];
-  }
+  protected $entityTypeId = 'node';
 
   /**
    * {@inheritdoc}
    */
   public function getFormId() {
-    return 'quick_node_clone_setting_form';
+    return 'quick_node_clone_node_setting_form';
   }
 
   /**
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    $settings = $this->configFactory->get('quick_node_clone.settings');
+
     $form['text_to_prepend_to_title'] = [
       '#type' => 'textfield',
       '#title' => $this->t('Text to prepend to title'),
-      '#default_value' => $settings->get('text_to_prepend_to_title'),
+      '#default_value' => $this->getSettings('text_to_prepend_to_title'),
       '#description' => $this->t('Enter text to add to the title of a cloned node to help content editors. A space will be added between this text and the title. Example: "Clone of"'),
     ];
+
     return parent::buildForm($form, $form_state);
   }
 
@@ -42,8 +43,11 @@ class QuickNodeCloneSettingForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $text_to_prepend_to_title = $form_state->getValue('text_to_prepend_to_title');
-    $this->config('quick_node_clone.settings')->set('text_to_prepend_to_title', $text_to_prepend_to_title)->save();
+    $form_state->cleanValues();
+    $form_values = $form_state->getValues();
+    $this->config('quick_node_clone.settings')->set('text_to_prepend_to_title', $form_values['text_to_prepend_to_title'])->save();
+
+    parent::submitForm($form, $form_state);
   }
 
 }
