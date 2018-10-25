@@ -144,7 +144,6 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
         if (!$node->get($field_name)->isEmpty()) {
           foreach ($node->get($field_name) as $value) {
             if ($value->entity) {
-              $pbundle_name = $value->entity->bundle();
               $value->entity = $value->entity->createDuplicate();
               foreach ($value->entity->getFieldDefinitions() as $field_definition) {
                 $field_storage_definition = $field_definition->getFieldStorageDefinition();
@@ -152,7 +151,7 @@ class QuickNodeCloneEntityFormBuilder extends EntityFormBuilder {
                 $pfield_name = $field_storage_definition->getName();
 
                 // Check whether this field is excluded and if so unset.
-                if ($this->excludeParagraphField($pfield_name, $pbundle_name)) {
+                if ($this->excludeParagraphField($pfield_name, $value->entity->bundle())) {
                   unset($value->entity->{$pfield_name});
                 }
 
